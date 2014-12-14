@@ -9,14 +9,15 @@
 (defn- vid [vtt-path] 
   [:video.video-js.vjs-default-skin 
     {:data-setup "{}",
-    :width "640"
-    :height "480" 
+    :width "769"
+    :height "432" 
     :poster "really-cool-video-poster.jpg", 
-    :preload "auto", 
+    :preload "none", 
     :autoplay "autoplay",
     :controls "controls"} 
     [:source 
-      {:type "video/mp4", 
+      {
+        :type "video/mp4", 
       :src "/msg.sm.mp4"}]  
     [:track 
       {:default "default", 

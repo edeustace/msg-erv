@@ -6,6 +6,9 @@
             [compojure.core :refer :all]
             [clojure.string :as str]
             [compojure.route :as route]
+            [ring.util.response :as r]
+            [ring.middleware.content-type :refer [wrap-content-type]
+            [ring.middleware.not-modified :refer [wrap-not-modified]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]))
 
 (defn- vtt-path [r] (str/join "" ["/vtt/" r ".vtt"]))
@@ -22,11 +25,14 @@
   
   (GET "/vtt/:recipient.vtt" [recipient]
     (def r (rec/msg recipient))
-    (vtt/vtt r))
+
+    (-> 
+      (r/response (->> (vtt/vtt r)))
+      (r/header "Content-Type" "text/vtt; charset=utf-8")))
 
   (route/resources "/")
 
   (route/not-found "Not Found"))
 
 (def app
-  (wrap-defaults app-routes site-defaults))
+  (wrap-defaults wrap-content-type wrap-not-modified app-routes site-defaults))
