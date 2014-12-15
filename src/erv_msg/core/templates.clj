@@ -11,14 +11,11 @@
     {:data-setup "{}",
     :width "769"
     :height "432" 
-    :poster "really-cool-video-poster.jpg", 
     :preload "none", 
     :autoplay "autoplay",
     :controls "controls"} 
-    [:source 
-      {
-        :type "video/mp4", 
-      :src "/msg.sm.mp4"}]  
+    [:source { :type "video/webm", :src "//d2ga6azgkzbw4r.cloudfront.net/msg.green.webm"}]
+    [:source { :type "video/mp4", :src "//d2ga6azgkzbw4r.cloudfront.net/msg.green.mp4"}]
     [:track 
       {:default "default", 
       :label "English", 
