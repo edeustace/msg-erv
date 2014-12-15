@@ -1,8 +1,13 @@
 (ns erv-msg.core.new-handler
   (:require [compojure.core :refer :all]
             [ring.middleware.json :as middleware]
+            [erv-msg.core.templates :as tmpl]
+            [erv-msg.core.recipient :as recipient]
             [compojure.handler :as handler]
             [erv-msg.core.dao :as dao]
+            [clojure.string :as str]
+            [ring.util.response :as r]
+            [erv-msg.core.vtt :as vtt]
             [erv-msg.core.views :as views]
             [compojure.route :as route]
             [confil.core :as confil]
@@ -13,6 +18,8 @@
   (:import
     [com.mongodb MongoOptions ServerAddress]
     ))
+
+(defn- vtt-path [r] (str/join "" ["/vtt/" r ".vtt"]))
 
 (def app
   (let [ uri (get (System/getenv) "MONGOLAB_URL" "mongodb://localhost/erv-msg") 
@@ -45,6 +52,20 @@
           [ r (dao/get-msg db recipient)]
           (prn "----->" recipient)
           (views/edit-message r)))
+
+
+      (GET "/to/:recipient" [recipient] 
+        (tmpl/index recipient (vtt-path recipient)))
+      
+      (GET "/vtt/:recipient.vtt" [recipient]
+
+        (let [recipient (dao/get-msg db recipient)
+              msg (get recipient "msg")
+              lines (str/split msg #"\n")
+              cleaned (map #(str/trim %) lines)]
+          (-> 
+            (r/response (->> (vtt/vtt cleaned)))
+            (r/header "Content-Type" "text/vtt; charset=utf-8"))))
 
       (route/resources "/")
       (route/not-found "Not Found"))

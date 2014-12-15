@@ -21,14 +21,16 @@
       (include-js "/edit-message.js")]
    [:body
       [:div {:class "container"}
-        [:form {:role "form"}
+        [:div {:role "form"}
           [:div {:class "form-group"}
             [:label "recipient"]
             [:input {:id "recipient" :class "form-control" :type "text" :value  (get msg "recipient")}]
           ]
+          [:p {:class "bg-success"}
+            "You must enter exactly 12 lines below"]
           [:div {:class "form-group"}
             [:label "msg"]
-            [:textarea {:class "form-control" :id "msg"} (get msg "msg")]
+            [:textarea {:rows 12 :class "form-control" :id "msg"} (get msg "msg")]
           ]
           [:div {:class "form-group"}
             [:label ""]
@@ -44,10 +46,11 @@
       [:title "Messages..."]
       (include-css "//vjs.zencdn.net/4.10/video-js.css")
       (include-css "/main.css")
+      (include-css "//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css")
       (include-css "/editor.css")
       (include-js "//vjs.zencdn.net/4.10/video.js")
-      (include-js "/messages.js")]
    [:body
       [:div {:class "container"}
-        [:a {:href "/editor/messages/new"} "New message"]
-        (map msg-link msg-list)]]))
+        [:div {:class "row"}
+          [:a {:href "/editor/messages/edit/new.html"} "New message"]
+          (map msg-link msg-list)]]]]))
