@@ -31,7 +31,7 @@
 (defroutes app-routes
 
   ;editing
-  (GET "/editor/messages" [] "load all messages" {:body (dao/list-msgs db) }))
+  ;(GET "/editor/messages" [] "load all messages" {:body (dao/list-msgs db) }))
   ;(POST "/editor/message" [] "create new message ")
   ;(PUT "/editor/message/:recipient" [recipient] (str/join "update msg for" recipient))
   ;(DELETE "/editor/message/:recipient" [recipient] (str/join "delete msg for" recipient))
