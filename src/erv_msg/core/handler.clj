@@ -1,9 +1,12 @@
 (ns erv-msg.core.handler
+  (:require monger.json)
   (:require 
             [erv-msg.core.templates :as tmpl]
             [erv-msg.core.vtt :as vtt]
+            [erv-msg.core.dao :as dao]
             [erv-msg.core.byte-range :as br]
             [erv-msg.core.recipient :as recipient]
+            [monger.core :as mg]
             [compojure.core :refer :all]
             [clojure.string :as str]
             [compojure.route :as route]
@@ -13,10 +16,23 @@
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]))
 
 (defn- vtt-path [r] (str/join "" ["/vtt/" r ".vtt"]))
+
+(def db-info 
+  (let [
+        uri (get (System/getenv) "MONGOLAB_URL" "mongodb://localhost/erv-msg")
+        ;uri (System/genenv "MONGOLAB_URL" "mongodb://localhost/erv-msg")
+       {:keys [conn db]} (mg/connect-via-uri uri)]
+       (prn db)
+       (prn conn)
+       db
+       ))
+
 (defroutes app-routes
 
   ;editing
-  ;(GET "/editor/messages" [] "load all messages")
+  (GET "/editor/messages" [] "load all messages"
+    (dao/list-msgs db-info)
+    )
   ;(POST "/editor/message" [] "create new message ")
   ;(PUT "/editor/message/:recipient" [recipient] (str/join "update msg for" recipient))
   ;(DELETE "/editor/message/:recipient" [recipient] (str/join "delete msg for" recipient))
