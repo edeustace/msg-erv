@@ -11,6 +11,7 @@
             [clojure.string :as str]
             [compojure.route :as route]
             [ring.util.response :as r]
+            [ring.middleware.json :as middleware]
             [ring.middleware.content-type :refer [wrap-content-type]]
             [ring.middleware.not-modified :refer [wrap-not-modified]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]))
@@ -30,9 +31,7 @@
 (defroutes app-routes
 
   ;editing
-  (GET "/editor/messages" [] "load all messages"
-    (dao/list-msgs db-info)
-    )
+  (GET "/editor/messages" [] "load all messages" {:body (dao/list-msgs db) }))
   ;(POST "/editor/message" [] "create new message ")
   ;(PUT "/editor/message/:recipient" [recipient] (str/join "update msg for" recipient))
   ;(DELETE "/editor/message/:recipient" [recipient] (str/join "delete msg for" recipient))
