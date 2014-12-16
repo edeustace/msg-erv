@@ -21,7 +21,7 @@
 (defn- vtt-path [r] (str/join "" ["/vtt/" r ".vtt"]))
 
 (def app
-  (let [ uri (get (System/getenv) "MONGOLAB_URL" "mongodb://localhost/erv-msg") 
+  (let [ uri (get (System/getenv) "MONGOLAB_URI" "mongodb://localhost/erv-msg") 
          {:keys [conn db]} (mg/connect-via-uri uri)]
 
     (defroutes app-routes
