@@ -21,6 +21,9 @@
       (include-js "/edit-message.js")]
    [:body
       [:div {:class "container"}
+
+        [:a {:href (str "/to/" (get msg "recipient"))} "View Video"]
+        [:br]
         [:div {:role "form"}
           [:div {:class "form-group"}
             [:label "recipient"]
