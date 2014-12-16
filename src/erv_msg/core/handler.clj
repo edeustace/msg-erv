@@ -1,56 +1,77 @@
 (ns erv-msg.core.handler
-  (:require monger.json)
-  (:require 
-            [erv-msg.core.templates :as tmpl]
-            [erv-msg.core.vtt :as vtt]
-            [erv-msg.core.dao :as dao]
-            [erv-msg.core.byte-range :as br]
-            [erv-msg.core.recipient :as recipient]
-            [monger.core :as mg]
-            [compojure.core :refer :all]
-            [clojure.string :as str]
-            [compojure.route :as route]
-            [ring.util.response :as r]
+  (:require [compojure.core :refer :all]
             [ring.middleware.json :as middleware]
-            [ring.middleware.content-type :refer [wrap-content-type]]
-            [ring.middleware.not-modified :refer [wrap-not-modified]]
-            [ring.middleware.defaults :refer [wrap-defaults site-defaults]]))
+            [erv-msg.core.templates :as tmpl]
+            [erv-msg.core.recipient :as recipient]
+            [compojure.handler :as handler]
+            [erv-msg.core.dao :as dao]
+            [clojure.string :as str]
+            [ring.util.response :as r]
+            [erv-msg.core.vtt :as vtt]
+            [erv-msg.core.views :as views]
+            [compojure.route :as route]
+            [monger.core :as mg]
+            [monger.cursor :as mc]
+            )
+
+  (:import
+    [com.mongodb MongoOptions ServerAddress]
+    ))
 
 (defn- vtt-path [r] (str/join "" ["/vtt/" r ".vtt"]))
 
-(def db-info 
-  (let [
-        uri (get (System/getenv) "MONGOLAB_URL" "mongodb://localhost/erv-msg")
-        ;uri (System/genenv "MONGOLAB_URL" "mongodb://localhost/erv-msg")
-       {:keys [conn db]} (mg/connect-via-uri uri)]
-       (prn db)
-       (prn conn)
-       db
-       ))
-
-(defroutes app-routes
-
-  ;editing
-  ;(GET "/editor/messages" [] "load all messages" {:body (dao/list-msgs db) }))
-  ;(POST "/editor/message" [] "create new message ")
-  ;(PUT "/editor/message/:recipient" [recipient] (str/join "update msg for" recipient))
-  ;(DELETE "/editor/message/:recipient" [recipient] (str/join "delete msg for" recipient))
-  ;; see: https://github.com/ring-clojure/ring/blob/master/ring-core/src/ring/util/response.clj#L103
-
-  (GET "/:recipient" [recipient] 
-    (tmpl/index recipient (vtt-path recipient)))
-  
-  (GET "/vtt/:recipient.vtt" [recipient]
-    (def r (recipient/msg recipient))
-    (-> 
-      (r/response (->> (vtt/vtt r)))
-      (r/header "Content-Type" "text/vtt; charset=utf-8")))
-
-  (route/resources "/")
-
-  (route/not-found "Not Found"))
-
 (def app
-  ;wrap-content-type wrap-not-modified
-  (wrap-defaults  app-routes site-defaults)
-  )
+  (let [ uri (get (System/getenv) "MONGOLAB_URL" "mongodb://localhost/erv-msg") 
+         {:keys [conn db]} (mg/connect-via-uri uri)]
+
+    (defroutes app-routes
+      (GET "/" [] {:body {:message "Hello"}})
+
+      (PUT "/editor/message/:recipient" request 
+        (let [json (:json-params request)
+                  rp (:route-params request)
+                  recipient (:recipient rp)
+                  ]
+        (prn "json -> " json)
+        (dao/update-msg db recipient json)
+        {:body "OK!"}
+        ))
+
+      (GET "/editor/messages" [] "load all messages"
+        (dao/list-msgs db))
+
+      (GET "/editor/messages.html" []
+        (let 
+          [ l (into [] (dao/list-msgs db)) ]
+          (views/messages l))
+        )
+
+      (GET "/editor/messages/edit/:recipient.html" [recipient]
+        (let 
+          [ r (dao/get-msg db recipient)]
+          (prn "----->" recipient)
+          (views/edit-message r)))
+
+
+      (GET "/to/:recipient" [recipient] 
+        (tmpl/index recipient (vtt-path recipient)))
+      
+      (GET "/vtt/:recipient.vtt" [recipient]
+
+        (let [recipient (dao/get-msg db recipient)
+              msg (get recipient "msg")
+              lines (str/split msg #"\n")
+              cleaned (map #(str/trim %) lines)]
+          (-> 
+            (r/response (->> (vtt/vtt cleaned)))
+            (r/header "Content-Type" "text/vtt; charset=utf-8"))))
+
+      (route/resources "/")
+      (route/not-found "Not Found"))
+
+    ( ->
+         (handler/api app-routes)
+         (middleware/wrap-json-body)
+         (middleware/wrap-json-params)
+         (middleware/wrap-json-response)
+         )))
