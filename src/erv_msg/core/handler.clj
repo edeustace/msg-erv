@@ -50,7 +50,7 @@
         (let 
           [ r (dao/get-msg db recipient)]
           (prn "----->" recipient)
-          (views/edit-message r)))
+          (views/edit-message r vtt/times)))
 
 
       (GET "/to/:recipient" [recipient] 

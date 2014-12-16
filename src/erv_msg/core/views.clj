@@ -10,7 +10,7 @@
     [:a {:href (str "/editor/messages/delete/" (:recipient l) ".html") } "Delete" ]]
   )
 
-(defn edit-message [msg] "...."
+(defn edit-message [msg times] "...."
   (html5 {:lang "en"}
     [:head
       [:title "Messages..."]
@@ -28,9 +28,19 @@
           ]
           [:p {:class "bg-success"}
             "You must enter exactly 12 lines below"]
-          [:div {:class "form-group"}
-            [:label "msg"]
-            [:textarea {:rows 12 :class "form-control" :id "msg"} (get msg "msg")]
+          [:table {:style "width: 100%"}
+            [:tr
+              [:td  {:style "width: 200px"}
+                [:p {:class "bg-primary"} (map #(str % "<br/>") times)]
+              ]
+              [:td 
+                [:div {:class "form-group"}
+                  [:label "msg"]
+                  [:textarea {:rows 12 :class "form-control" :id "msg"} (get msg "msg")]
+                ]
+
+              ]
+            ]
           ]
           [:div {:class "form-group"}
             [:label ""]
